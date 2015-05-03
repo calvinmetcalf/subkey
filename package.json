@@ -1,0 +1,23 @@
+{
+  "name": "subkey",
+  "version": "1.0.0",
+  "description": "create subkeys to sign with",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js | tspec"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "elliptic": "^3.0.3",
+    "protocol-buffers": "^3.0.0"
+  },
+  "devDependencies": {
+    "tap-spec": "^3.0.0",
+    "tape": "^4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:calvinmetcalf/subkey.git"
+  }
+}
