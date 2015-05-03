@@ -80,5 +80,9 @@ exports.clearKeys = function () {
 };
 exports.verify = function (key, _sig, message) {
   var sig = messages.sig.decode(_sig);
-  return getPublic(key, sig).verify(sig.sig, message);
+  try {
+    return getPublic(key, sig).verify(sig.sig, message);
+  } catch (_) {
+    return false;
+  }
 }

@@ -15,5 +15,5 @@ test('fail', function (t) {
   var msg = 'basic';
   var sig = subkey.sign(privkey, msg);
   t.ok(sig, 'produce sig');
-  t.throws(subkey.verify.bind(null, pubkey, sig, 'basics'), 'don\'t verify it');
+  t.notok(subkey.verify(pubkey, sig, 'basics'), 'don\'t verify it');
 });
