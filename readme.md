@@ -1,6 +1,12 @@
 subkey
 ===
 
+[![Build Status](https://travis-ci.org/calvinmetcalf/subkey.svg)](https://travis-ci.org/calvinmetcalf/subkey)
+
+```bash
+npm install subkey
+```
+
 Create signatures based on an RSA key, but using a ed25519 session key to avoid
 signature oracle issues.  Uses [elliptic](https://github.com/indutny/elliptic) for ECDSA.
 
