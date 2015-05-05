@@ -1,6 +1,6 @@
 {
   "name": "subkey",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "create subkeys to sign with",
   "main": "index.js",
   "scripts": {
