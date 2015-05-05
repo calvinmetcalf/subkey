@@ -23,7 +23,9 @@ function getPrivate(key, async) {
   var id;
   if (key && !Buffer.isBuffer(key) && typeof key !== 'string') {
     if (key.key && (Buffer.isBuffer(key.key) || typeof key.key === 'string')) {
-      id = id = hash(key.key).toString('hex');
+      id = hash(key.key).toString('hex');
+    } else if (async) {
+      id = hash(JSON.stringify(key)).toString('hex');
     } else {
       throw new TypeError('invalid key');
     }
@@ -40,6 +42,9 @@ function getPrivate(key, async) {
 }
 
 function getPublic(key, sig, insecure) {
+  if (!Buffer.isBuffer(key)) {
+    key = new Buffer(key);
+  }
   var id = hash(Buffer.concat([key, sig.key, sig.keysig])).toString('hex');
   if (insecure) {
     id += 'insecure';
