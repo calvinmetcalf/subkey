@@ -1,3 +1,4 @@
+'use strict';
 var protobuf = require('protocol-buffers');
 var EC = require('elliptic').ec;
 var ec = new EC('ed25519');
@@ -18,11 +19,20 @@ function hash(msg) {
 }
 
 function getPrivate(key) {
-  var id = hash(key).toString('hex');
+  var id;
+  if (key && !Buffer.isBuffer(key) && typeof key !== 'string') {
+    if (key.key && (Buffer.isBuffer(key.key) || typeof key.key === 'string')) {
+      id = id = hash(key.key).toString('hex');
+    } else {
+      throw new TypeError('invalid key');
+    }
+  } else {
+    id = hash(key).toString('hex');
+  }
   if (id in privCache) {
     return privCache[id];
   }
-  return privCache[id] = new Signer(key);
+  return privCache[id] = new Signer(key); // eslint-disable-line no-return-assign
 }
 
 function getPublic(key, sig) {
@@ -30,7 +40,7 @@ function getPublic(key, sig) {
   if (id in pubCache) {
     return pubCache[id];
   }
-  return pubCache[id] = new Verifier(key, sig.key, sig.keysig);
+  return pubCache[id] = new Verifier(key, sig.key, sig.keysig); // eslint-disable-line no-return-assign
 }
 function Signer(key) {
   this.pub = null;
@@ -42,7 +52,7 @@ Signer.prototype.createPair = function (key) {
   this.ec = ec.genKeyPair();
   this.pub = new Buffer(this.ec.getPublic(true, 'hex'), 'hex');
   this.sig = crypto.createSign('RSA-SHA224').update(this.pub).sign(key);
-}
+};
 
 Signer.prototype.sign = function (msg) {
   var sig = new Buffer(this.ec.sign(hash(msg)).toDER());
@@ -51,38 +61,38 @@ Signer.prototype.sign = function (msg) {
     keysig: this.sig,
     sig: sig
   });
-}
+};
 function Verifier (key, derivedKey, keySig) {
   this.ec = null;
   this.verifySig(key, derivedKey, keySig);
   this.setupEc(derivedKey);
 }
 Verifier.prototype.setupEc = function(derivedKey) {
-  this.ec = ec.keyFromPublic(derivedKey.toString('hex'), 'hex')
-}
+  this.ec = ec.keyFromPublic(derivedKey.toString('hex'), 'hex');
+};
 Verifier.prototype.verifySig = function(key, derivedKey, keySig) {
   if (!crypto.createVerify('RSA-SHA224').update(derivedKey).verify(key, keySig)) {
-      throw new Error('unable to verify derived key');
+    throw new Error('unable to verify derived key');
   }
-}
+};
 Verifier.prototype.verify = function (sig, message) {
   if (!this.ec.verify(hash(message).toString('hex'), sig)) {
-      throw new Error('unable to verify message');
+    throw new Error('unable to verify message');
   }
   return true;
-}
+};
 exports.sign = function (key, message) {
   return getPrivate(key).sign(message);
-}
+};
 exports.clearKeys = function () {
   privCache = {};
   pubCache = {};
 };
 exports.verify = function (key, _sig, message) {
-  var sig = messages.sig.decode(_sig);
   try {
+    var sig = messages.sig.decode(_sig);
     return getPublic(key, sig).verify(sig.sig, message);
   } catch (_) {
     return false;
   }
-}
+};
