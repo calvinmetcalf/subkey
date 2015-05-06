@@ -122,20 +122,22 @@ Signer.prototype.signAsync = function (msg, cb) {
 function Verifier (key, derivedKey, keySig, insecure) {
   this.ec = null;
   this.insecure = !!insecure;
-  this.verifySig(key, derivedKey, keySig);
-  this.setupEc(derivedKey);
+  if (this.verifySig(key, derivedKey, keySig)) {
+    this.setupEc(derivedKey);
+  }
 }
 Verifier.prototype.setupEc = function(derivedKey) {
   this.ec = ec.keyFromPublic(derivedKey.toString('hex'), 'hex');
 };
 Verifier.prototype.verifySig = function(key, derivedKey, keySig) {
   if (!crypto.createVerify(this.insecure ? 'RSA-SHA1' : 'RSA-SHA224').update(derivedKey).verify(key, keySig)) {
-    throw new Error('unable to verify derived key');
+    return false;
   }
+  return true;
 };
 Verifier.prototype.verify = function (sig, message) {
-  if (!this.ec.verify(hash(message).toString('hex'), sig)) {
-    throw new Error('unable to verify message');
+  if (!this.ec || !this.ec.verify(hash(message).toString('hex'), sig)) {
+    return false;
   }
   return true;
 };
@@ -150,12 +152,8 @@ exports.clearKeys = function () {
   pubCache = {};
 };
 exports.verify = function (key, _sig, message) {
-  try {
-    var sig = messages.sig.decode(_sig);
-    return getPublic(key, sig).verify(sig.sig, message);
-  } catch (_) {
-    return false;
-  }
+  var sig = messages.sig.decode(_sig);
+  return getPublic(key, sig).verify(sig.sig, message);
 };
 
 exports.verifyAsync = function (key, _sig, message, callback) {
@@ -165,9 +163,9 @@ exports.verifyAsync = function (key, _sig, message, callback) {
     process.nextTick(function () {
       callback(null, out);
     });
-  } catch (_) {
+  } catch (e) {
     process.nextTick(function () {
-      callback(null, false);
+      callback(e);
     });
   }
 };
